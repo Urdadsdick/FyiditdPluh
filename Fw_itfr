@@ -1,0 +1,272 @@
+-- Load Orion Library for GUI
+local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Orion/main/source'))()
+
+-- Create Window
+local Window = OrionLib:MakeWindow({
+    Name = "Goat Hub for Street Wars 2",
+    HidePremium = false,
+    SaveConfig = true,
+    ConfigFolder = "GoatHub"
+})
+
+-- Global variables for toggles
+_G.killAura = false
+_G.onePunch = false
+_G.autoPickup = false
+_G.godmode = false
+_G.wallHack = false
+_G.duplicateCard = false
+_G.autoEquipLaptop = false
+_G.autoSell = false
+_G.autoCashMoney = false
+_G.autoBuyLaptop = false
+_G.autoFarm = false
+
+-- Function to enable Godmode (sets health to 4 million)
+function enableGodmode()
+    local player = game.Players.LocalPlayer
+    if player and player.Character then
+        local humanoid = player.Character:FindFirstChild("Humanoid")
+        if humanoid then
+            humanoid.MaxHealth = 4000000
+            humanoid.Health = 4000000
+        end
+    end
+end
+
+-- Function to enable Kill Aura (sets health of nearby players to 0)
+function enableKillAura()
+    local player = game.Players.LocalPlayer
+    local character = player.Character
+    game:GetService("RunService").Heartbeat:Connect(function()
+        if _G.killAura and character then
+            for _, otherPlayer in pairs(game.Players:GetChildren()) do
+                if otherPlayer ~= player and otherPlayer.Character then
+                    local otherCharacter = otherPlayer.Character
+                    local otherHumanoid = otherCharacter:FindFirstChild("Humanoid")
+                    if otherHumanoid and (otherCharacter.PrimaryPart.Position - character.PrimaryPart.Position).Magnitude < 10 then
+                        otherHumanoid.Health = 0
+                    end
+                end
+            end
+        end
+    end)
+end
+
+-- Function to enable One Punch (sets health to 0 on punch)
+function enableOnePunch()
+    local player = game.Players.LocalPlayer
+    local character = player.Character
+    game:GetService("RunService").Heartbeat:Connect(function()
+        if _G.onePunch and character then
+            for _, otherPlayer in pairs(game.Players:GetChildren()) do
+                if otherPlayer ~= player and otherPlayer.Character then
+                    local otherCharacter = otherPlayer.Character
+                    local otherHumanoid = otherCharacter:FindFirstChild("Humanoid")
+                    if otherHumanoid and (otherCharacter.PrimaryPart.Position - character.PrimaryPart.Position).Magnitude < 5 then
+                        otherHumanoid.Health = 0
+                    end
+                end
+            end
+        end
+    end)
+end
+
+-- Function to enable Auto Pickup
+function enableAutoPickup()
+    local player = game.Players.LocalPlayer
+    local character = player.Character
+    if not character then return end
+
+    game:GetService("RunService").Heartbeat:Connect(function()
+        if _G.autoPickup and character then
+            for _, item in pairs(workspace:GetChildren()) do
+                if item:IsA("Part") and (item.Position - character.PrimaryPart.Position).Magnitude < 50000000 then
+                    firetouchinterest(character.HumanoidRootPart, item, 0)
+                    firetouchinterest(character.HumanoidRootPart, item, 1)
+                end
+            end
+        end
+    end)
+end
+
+-- Function to enable Wall Hack
+function enableWallHack()
+    local player = game.Players.LocalPlayer
+    if player and player.Character then
+        for _, otherPlayer in pairs(game.Players:GetChildren()) do
+            if otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                local outline = Instance.new("SelectionBox")
+                outline.Adornee = otherPlayer.Character.HumanoidRootPart
+                outline.Color3 = Color3.fromRGB(255, 0, 0)
+                outline.Parent = otherPlayer.Character
+            end
+        end
+    end
+end
+
+-- Function to duplicate Card Items
+function duplicateCardItems(amount)
+    local player = game.Players.LocalPlayer
+    local replicatedStorage = game:GetService("ReplicatedStorage")
+    local card = replicatedStorage:FindFirstChild("CardItem")
+
+    if card then
+        local playerMoney = player.leaderstats and player.leaderstats.Money
+        if playerMoney then
+            local totalCost = amount * card.Price
+            if playerMoney.Value >= totalCost then
+                playerMoney.Value = playerMoney.Value - totalCost
+                for i = 1, amount do
+                    local cardClone = card:Clone()
+                    cardClone.Parent = player.Backpack
+                end
+                print("Successfully duplicated " .. amount .. " CardItems.")
+            else
+                warn("Not enough money to duplicate " .. amount .. " CardItems.")
+            end
+        end
+    else
+        warn("Card item not found in ReplicatedStorage!")
+    end
+end
+
+-- Function to auto farm at the anonymous dealer
+function startAutoFarm()
+    local player = game.Players.LocalPlayer
+    local dealer = game.Workspace:FindFirstChild("AnonymousDealer")
+    local laptop = game.Workspace:FindFirstChild("Laptop")
+
+    -- Continuously farm until stopped
+    game:GetService("RunService").Heartbeat:Connect(function()
+        if _G.autoFarm and dealer and laptop then
+            -- Auto Equip Laptop
+            if _G.autoEquipLaptop then
+                -- Equip the laptop if not equipped
+                if not player.Backpack:FindFirstChild("Laptop") then
+                    -- Add logic to buy and equip laptop here
+                    print("Auto Equip Laptop")
+                end
+            end
+
+            -- Auto Sell cards
+            if _G.autoSell then
+                local cardItem = player.Backpack:FindFirstChild("CardItem")
+                if cardItem then
+                    -- Sell cards logic here
+                    print("Auto Selling Cards")
+                end
+            end
+
+            -- Auto Cash Money on Cards
+            if _G.autoCashMoney then
+                local cardItem = player.Backpack:FindFirstChild("CardItem")
+                if cardItem then
+                    -- Cash money logic here
+                    print("Auto Cashing Money on Cards")
+                end
+            end
+
+            -- Auto Buy Laptop if not already equipped
+            if _G.autoBuyLaptop and not player.Backpack:FindFirstChild("Laptop") then
+                -- Logic to buy laptop here
+                print("Auto Buying Laptop")
+            end
+        end
+    end)
+end
+
+-- Tabs creation with Star Icon
+
+-- AutoFarm Tab
+local autoFarmTab = Window:MakeTab({
+    Name = "AutoFarm",
+    Icon = "rbxassetid://6034816636", -- Star Icon
+    PremiumOnly = false
+})
+
+autoFarmTab:AddButton({
+    Name = "Start Auto Farm",
+    Callback = function()
+        _G.autoFarm = true
+        startAutoFarm()
+    end
+})
+
+autoFarmTab:AddToggle({
+    Name = "Auto Equip Laptop",
+    Default = false,
+    Callback = function(Value)
+        _G.autoEquipLaptop = Value
+    end
+})
+
+autoFarmTab:AddToggle({
+    Name = "Auto Sell Cards",
+    Default = false,
+    Callback = function(Value)
+        _G.autoSell = Value
+    end
+})
+
+autoFarmTab:AddToggle({
+    Name = "Auto Cash Money on Cards",
+    Default = false,
+    Callback = function(Value)
+        _G.autoCashMoney = Value
+    end
+})
+
+autoFarmTab:AddToggle({
+    Name = "Auto Buy Laptop",
+    Default = false,
+    Callback = function(Value)
+        _G.autoBuyLaptop = Value
+    end
+})
+
+-- Player Tab
+local playerTab = Window:MakeTab({
+    Name = "Player",
+    Icon = "rbxassetid://6034816636", -- Star Icon
+    PremiumOnly = false
+})
+
+playerTab:AddButton({
+    Name = "Enable Godmode (4 Million Health)",
+    Callback = function()
+        _G.godmode = true
+        enableGodmode()
+    end
+})
+
+playerTab:AddButton({
+    Name = "Enable One Punch",
+    Callback = function()
+        _G.onePunch = true
+        enableOnePunch()
+    end
+})
+
+playerTab:AddButton({
+    Name = "Enable Kill Aura",
+    Callback = function()
+        _G.killAura = true
+        enableKillAura()
+    end
+})
+
+-- Initialize OrionLib UI
+OrionLib:Init()
+
+-- Ensure all features execute smoothly
+game:GetService("RunService").Heartbeat:Connect(function()
+    -- Ensuring key functionalities are running
+    if _G.autoPickup then
+        enableAutoPickup()
+    end
+
+    if _G.wallHack then
+        enableWallHack()
+    end
+end)
